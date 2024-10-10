@@ -12,9 +12,10 @@ public class Soldier : MonoBehaviour
     private UnityEngine.AI.NavMeshAgent agent;
     private GameObject player;
     private bool inAttackRange;
-    private float changeMind;
+    private float attackCount;
 
-
+    public int soldierHealth;
+    public float changeMind;
     public float attackRange;
     public float attackRatio;
     private void Awake()
@@ -27,12 +28,14 @@ public class Soldier : MonoBehaviour
     void Start()
     {
         inAttackRange = false;
+        attackCount = attackRatio;
         state.PushState(Idle, OnIdleEnter, null);
     }
 
     void Update()
     {
         inAttackRange = Vector3.Distance(transform.position, player.transform.position) < attackRange;
+        if (soldierHealth <= 0) { state.PushState(Death,OnDeathEnter,OnDeathExit); }
     }
 
     void OnIdleEnter()
@@ -41,7 +44,7 @@ public class Soldier : MonoBehaviour
     }
     void Idle()
     {
-        changeMind--;
+        changeMind -= Time.deltaTime;
         if (changeMind<=0)
         {
             state.PushState(Chase, OnChaseEnter, OnChaseExit);
@@ -55,11 +58,6 @@ public class Soldier : MonoBehaviour
     void Chase()
     {
         agent.SetDestination(player.transform.position);
-        if (Vector3.Distance(transform.position, player.transform.position) > 5.5f)
-        {
-            state.PopState();
-            state.PushState(Idle, OnIdleEnter, null);
-        }
         if (inAttackRange)
         {
             state.PushState(Attack, OnEnterAttack, null);
@@ -76,19 +74,30 @@ public class Soldier : MonoBehaviour
     }
     void Attack()
     {
-        attackRatio -= Time.deltaTime;
+        attackCount -= Time.deltaTime;
         if (!inAttackRange)
         {
             state.PopState();
         }
-        else if (attackRatio <= 0)
+        else if (attackCount <= 0)
         {
             animator.SetTrigger("Attack");
             //player.Hurt(2, 1);
-            attackRatio = 2f;
+            attackCount = attackRatio;
         }
     }
-
+    void OnDeathEnter()
+    {
+        animator.SetBool("Death", true);
+    }
+    void Death()
+    {
+        
+    }
+    void OnDeathExit()
+    {
+        
+    }
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;

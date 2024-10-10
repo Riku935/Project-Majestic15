@@ -5,6 +5,7 @@ using UnityEngine;
 public class PlayerStats : ScriptableObject
 {
     public float moveSpeed;
+    public int health;
 
     [Header("Shoot Settings")]
     public GameObject bulletPrefab;

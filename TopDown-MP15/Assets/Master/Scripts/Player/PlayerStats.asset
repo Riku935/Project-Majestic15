@@ -13,6 +13,7 @@ MonoBehaviour:
   m_Name: PlayerStats
   m_EditorClassIdentifier: 
   moveSpeed: 10
+  health: 0
   bulletPrefab: {fileID: 1839043405179555760, guid: 17356cc3eacab2146ad55e7f0757177f, type: 3}
   missilePrefab: {fileID: 7711980629441260117, guid: 24ae07f3278612b469a1f72bb69cb8cf, type: 3}
   canShoot: 1
