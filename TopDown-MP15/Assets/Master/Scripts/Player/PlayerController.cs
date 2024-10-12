@@ -8,9 +8,10 @@ public class PlayerController : MonoBehaviour
     private Rigidbody rb;
     private Vector3 movement;     
 
-    [SerializeField] PlayerStats stats;
+    public PlayerStats stats;
     public Transform firePoint;
     public Transform tankHead;
+    public Transform tankBody;
     private void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -19,13 +20,14 @@ public class PlayerController : MonoBehaviour
     {
         ProjectilePool.instance.InitializePool(stats.bulletPrefab, "Bullet");
         ProjectilePool.instance.InitializePool(stats.missilePrefab, "Missile");
+        UIManager.obj.UpdateMissile(stats.missileCount);
+
     }
     void Update()
     {
-        float moveX = Input.GetAxisRaw("Horizontal"); 
-        float moveZ = Input.GetAxisRaw("Vertical");   
-        movement = new Vector3(moveX, 0f, moveZ).normalized; 
-
+        float moveX = Input.GetAxisRaw("Horizontal");
+        float moveZ = Input.GetAxisRaw("Vertical");
+        movement = new Vector3(moveX, 0f, moveZ).normalized;
         if (Input.GetMouseButtonDown(0)) 
         {
             ShootBullet();
@@ -35,8 +37,12 @@ public class PlayerController : MonoBehaviour
         {
             ShootMissile();
         }
-    }
 
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            UIManager.obj.Pause();
+        }
+    }
     void FixedUpdate()
     {
         Vector3 moveDirection = movement * stats.moveSpeed * Time.fixedDeltaTime;
@@ -51,7 +57,6 @@ public class PlayerController : MonoBehaviour
             tankHead.rotation = Quaternion.LookRotation(direction);
         }
     }
-
     void ShootBullet()
     {
         GameObject bullet = ProjectilePool.instance.GetPooledObject("Bullet");
@@ -60,8 +65,6 @@ public class PlayerController : MonoBehaviour
             bullet.transform.position = firePoint.position;
             bullet.transform.rotation = firePoint.rotation;
             bullet.SetActive(true);
-            Rigidbody rbBullet = bullet.GetComponent<Rigidbody>();
-            rbBullet.velocity = firePoint.forward * stats.bulletForce;
         }
         stats.canShoot = false;
         StartCoroutine(TimeShoot());
@@ -74,10 +77,9 @@ public class PlayerController : MonoBehaviour
             missile.transform.position = firePoint.position;
             missile.transform.rotation = firePoint.rotation;
             missile.SetActive(true);
-            Rigidbody rbMissile = missile.GetComponent<Rigidbody>();
-            rbMissile.velocity = firePoint.forward * stats.missileForce;
         }
         stats.missileCount--;
+        UIManager.obj.UpdateMissile(stats.missileCount);
     }
     IEnumerator TimeShoot()
     {

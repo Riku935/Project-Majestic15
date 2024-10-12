@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using Unity.VisualScripting;
 using Unity.VisualScripting.Antlr3.Runtime.Misc;
 using UnityEngine;
 using UnityEngine.AI;
@@ -9,33 +8,44 @@ public class Soldier : MonoBehaviour
 {
     private StateMachine state;
     private Animator animator;
-    private UnityEngine.AI.NavMeshAgent agent;
+    private NavMeshAgent agent;
     private GameObject player;
     private bool inAttackRange;
-    private float attackCount;
+    private float attackCount = 0;
 
+    [Header("Enemy Settings")]
     public int soldierHealth;
     public float changeMind;
+    public float rotationSpeed = 5f;
+    public GameObject coin;
+    public delegate void EnemyDeathDelegate();
+    public event EnemyDeathDelegate OnDeath;
+
+    [Header("Shoot Settings")]
+    public Transform firePoint;
+    public GameObject bulletPrefab;
+    public float bulletForce;
     public float attackRange;
     public float attackRatio;
     private void Awake()
     {
         player = GameObject.FindWithTag("Player");
         animator = transform.GetChild(0).GetComponent<Animator>();
-        agent = GetComponent<UnityEngine.AI.NavMeshAgent>();
+        agent = GetComponent<NavMeshAgent>();
         state = GetComponent<StateMachine>();
     }
     void Start()
     {
         inAttackRange = false;
-        attackCount = attackRatio;
+        ProjectilePool.instance.InitializePool(bulletPrefab, "EnemyBullet");
+        ProjectilePool.instance.InitializePool(coin, "Coin");
         state.PushState(Idle, OnIdleEnter, null);
     }
 
     void Update()
     {
         inAttackRange = Vector3.Distance(transform.position, player.transform.position) < attackRange;
-        if (soldierHealth <= 0) { state.PushState(Death,OnDeathEnter,OnDeathExit); }
+        LookAtPlayer();
     }
 
     void OnIdleEnter()
@@ -82,21 +92,67 @@ public class Soldier : MonoBehaviour
         else if (attackCount <= 0)
         {
             animator.SetTrigger("Attack");
-            //player.Hurt(2, 1);
+            GameObject bullet = ProjectilePool.instance.GetPooledObject("EnemyBullet");
+            if (bullet != null)
+            {
+                bullet.transform.position = firePoint.position;
+                bullet.transform.rotation = firePoint.rotation;
+                bullet.SetActive(true);
+            }
+            
             attackCount = attackRatio;
         }
     }
     void OnDeathEnter()
     {
-        animator.SetBool("Death", true);
+        animator.SetBool("Dead", true);
     }
     void Death()
     {
-        
+        agent.isStopped = true;
+        ScoreManager.obj.currentScore++;
+        BoxCollider collider = GetComponent<BoxCollider>();
+        collider.enabled = false;
+        Destroy(gameObject,3f);
     }
-    void OnDeathExit()
+
+    public void TakeDamage(int damage)
     {
-        
+        soldierHealth -= damage;
+        if (soldierHealth <= 0)
+        {
+            if (OnDeath != null)
+            {
+                OnDeath.Invoke();
+            }
+            SpawnCoin();
+            state.PushState(Death, OnDeathEnter,null);
+        }
+    }
+    void LookAtPlayer()
+    {
+        Vector3 directionToPlayer = player.transform.position - transform.position;
+        directionToPlayer.y = 0; 
+
+        if (directionToPlayer != Vector3.zero)
+        {
+            Quaternion targetRotation = Quaternion.LookRotation(directionToPlayer);
+            transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
+        }
+    }
+    void SpawnCoin()
+    {
+        float randomValue = Random.Range(0f, 100f);
+        if (randomValue < 40f)
+        {
+            GameObject coin = ProjectilePool.instance.GetPooledObject("Coin");
+            if (coin != null)
+            {
+                coin.transform.position = transform.position;
+                coin.transform.rotation = transform.rotation;
+                coin.SetActive(true);
+            }
+        }
     }
     private void OnDrawGizmosSelected()
     {

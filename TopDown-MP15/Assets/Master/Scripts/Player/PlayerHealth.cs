@@ -7,35 +7,52 @@ public class PlayerHealth : MonoBehaviour
 {
     public Image healthBar;
     public Image shieldBar;
+    public float initialHealth;
+    public float initialShield;
     public float healthAmount;
     public float shieldAmount;
     public float coolingTime;
+    private void Start()
+    {
+        UIManager.obj.UpdateBar(healthAmount, shieldAmount);
+
+    }
     private void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.tag == "Bullet")
         {
-            TakeDamage(10);
+            StopCoroutine(RegenerateShield());
         }
     }
-    void TakeDamage(float damage)
+    public void TakeDamage(float damage)
     {
+        StartCoroutine(RegenerateShield());
         if (shieldAmount > 0)
         {
             shieldAmount -= damage;
-            shieldBar.fillAmount = shieldAmount / 100f;
+
+            if (shieldAmount < 0)
+            {
+                float remainingDamage = Mathf.Abs(shieldAmount); 
+                shieldAmount = 0; 
+                healthAmount -= remainingDamage; 
+            }
         }
-        if (shieldAmount <= 0 )
+        else
         {
             healthAmount -= damage;
-            healthBar.fillAmount = healthAmount / 100f;
         }
-        
+        if (healthAmount <= 0)
+        {
+            GameManager.obj.GameOver();
+        }
+        UIManager.obj.UpdateBar(healthAmount, shieldAmount);
     }
     void ShieldHeal(float healingAmount)
     {
         shieldAmount += healingAmount;
-        shieldAmount = Mathf.Clamp(shieldAmount, 0, 100);
-        shieldBar.fillAmount = shieldAmount / 100;
+        shieldAmount = Mathf.Clamp(shieldAmount, 0, initialShield);
+        shieldBar.fillAmount = shieldAmount / initialShield;
     }
     IEnumerator RegenerateShield()
     {

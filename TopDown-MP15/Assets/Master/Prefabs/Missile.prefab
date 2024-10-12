@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 7587846859016345446}
   - component: {fileID: 2770684105262278457}
   - component: {fileID: 1486537731803487077}
+  - component: {fileID: 1709255631764504236}
   m_Layer: 0
   m_Name: Missile
   m_TagString: Untagged
@@ -135,3 +136,23 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 112
   m_CollisionDetection: 0
+--- !u!114 &1709255631764504236
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7711980629441260117}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ab8c7bb12ee52a64489dbe3cbf2f5746, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  missileForce: 50
+  explosionRadius: 30
+  explosionForce: 700
+  missileDamage: 75
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 128
+  impactEffect: {fileID: 417761080263594737, guid: 7800b8f6b712bfe49bd663eeb3ebe1e4, type: 3}

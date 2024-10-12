@@ -20,4 +20,4 @@ MonoBehaviour:
   coolDown: 1
   bulletForce: 25
   missileForce: 25
-  missileCount: 2
+  missileCount: 3

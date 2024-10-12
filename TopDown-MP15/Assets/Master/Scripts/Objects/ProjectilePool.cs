@@ -7,7 +7,7 @@ public class ProjectilePool : MonoBehaviour
     public static ProjectilePool instance;
 
     private Dictionary<string, List<GameObject>> pooledObjects = new Dictionary<string, List<GameObject>>();
-    private int amountToPool = 10;
+    private int amountToPool = 30;
 
     private void Awake()
     {
